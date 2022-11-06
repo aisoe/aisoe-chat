@@ -10,4 +10,5 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
-//j
+//j J
+//export NODE_OPTIONS=--openssl-legacy-provider
