@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect, useCallback } from 'react'
 import useLocalStorage from '../hooks/useLocalStorage';
 import { useContacts } from './ContactsProvider';
 
@@ -15,22 +15,23 @@ export function ConversationProvider({ id, children }) {
 
     function createConversation(recipients) {
         setConversations(prevConversations => {
-        return [...prevConversations, { recipients, messages: [] }]
+            return [...prevConversations, { recipients, messages: [] }]
         })
     }
 
-    function addMessageToConversation({ recipients, text, sender }) {
+    const addMessageToConversation = useCallback(({ recipients, text, sender }) => {
         setConversations(prevConversations => {
-            let madeChange= false
+            let madeChange = false
             const newMessage = { sender, text }
             const newConversations = prevConversations.map(conversation => {
                 if (arrayEquality(conversation.recipients, recipients)) {
-                    madeChange = true
-                    return { 
+                madeChange = true
+                    return {
                         ...conversation,
-                        messages: [conversation.messages, newMessage]
+                        messages: [...conversation.messages, newMessage]
                     }
                 }
+
                 return conversation
             })
 
@@ -38,12 +39,12 @@ export function ConversationProvider({ id, children }) {
                 return newConversations
             } else {
                 return [
-                    ...prevConversations, 
+                    ...prevConversations,
                     { recipients, messages: [newMessage] }
                 ]
             }
         })
-    }
+    }, [setConversations])
 
     function sendMessage(recipients, text) {
         addMessageToConversation({ recipients, text, sender: id })
@@ -58,22 +59,22 @@ export function ConversationProvider({ id, children }) {
             return { id: recipient, name }
         })
 
-        const messages = conversation.messages.map(messages => {
+        const messages = conversation.messages.map(message => {
             const contact = contacts.find(contact => {
-                return contact.id === messages.sender
+                return contact.id === message.sender
             })
-            const name = (contact && contact.name) || messages.sender
-            const fromMe = id === messages.sender
-            return { ...messages, senderName: name, fromMe }
+            const name = (contact && contact.name) || message.sender
+            const fromMe = id === message.sender
+            return { ...message, senderName: name, fromMe }
         })
-
+    
         const selected = index === selectedConversationIndex
-        return { ...conversation, recipients, selected }
+        return { ...conversation, messages, recipients, selected }
     })
 
     const value = {
         conversations: formattedConversations,
-        selectedConversarion: formattedConversations[selectedConversationIndex],
+        selectedConversation: formattedConversations[selectedConversationIndex],
         sendMessage,
         selectConversationIndex: setSelectedConversationIndex,
         createConversation
@@ -81,13 +82,14 @@ export function ConversationProvider({ id, children }) {
 
     return (
         <ConversationsContext.Provider value={value}>
-        {children}
+            {children}
         </ConversationsContext.Provider>
     )
 }
 
 function arrayEquality(a, b) {
     if (a.length !== b.length) return false
+
     a.sort()
     b.sort()
 

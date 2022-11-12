@@ -22,3 +22,6 @@ function App() {
 }
 
 export default App;
+
+//j J
+//export NODE_OPTIONS=--openssl-legacy-provider
