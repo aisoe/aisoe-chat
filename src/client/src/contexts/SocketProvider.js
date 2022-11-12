@@ -12,8 +12,8 @@ export function SocketProvider({ id, children }) {
 
     useEffect(() => {
         const newSocket = io(
-            'http://localhost:5000', 
-            { query: { id }}
+            'http://localhost:5000',
+            { query: { id } }
         )
         setSocket(newSocket)
 
